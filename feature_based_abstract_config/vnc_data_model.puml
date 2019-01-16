@@ -1,0 +1,35 @@
+@startuml Feature Based Abstract Config - VNC DB Model
+package Fabric_DataModel\n[schema/fabric.xsd] as fabric_data_model {
+    class feature {
+        - name: String
+        - config_schema: String
+    }
+    class physical_role {
+        - name: String
+    }
+    class overlay_role {
+        - name: String
+    }
+    class feature_config {
+        - name: String
+        - additional_params: String
+        - vendor_configuration: String
+    }
+    class role_definition {
+        - name: String
+    }
+    class node_profile {
+        - name: String
+    }
+    class physical_router {
+        - name: String
+    }
+}
+node_profile "1" --> "n" role_definition : supported roles
+role_definition "1" --> "1" physical_role
+role_definition "1" --> "1" overlay_role
+role_definition "1" --> "n" feature
+role_definition "1" --> "n" feature_config : feature configuration
+physical_router "1" --> "1" node_profile
+physical_router "1" --> "1" role_definition : assigned role
+@enduml

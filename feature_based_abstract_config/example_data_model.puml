@@ -1,0 +1,63 @@
+@startuml Feature Based Abstract Config - VNC DB Model
+package Example {
+    together {
+        object "underlay_bgp\n<feature>" as underlay_bgp
+        object "overlay_bgp\n<feature>" as overlay_bgp
+        object "overlay_evpn\n<feature>" as overlay_evpn
+        object "overlay_lag\n<feature>" as overlay_lag
+    }
+    together {
+        object "leaf\n<physical_role>" as leaf
+        object "spine\n<physical_role>" as spine
+    }
+    together {
+        object "crb_gateway\n<overlay_role>" as crb_gateway
+        object "crb_access\n<overlay_role>" as crb_access
+        object "route_reflector\n<overlay_role>" as route_reflector
+        object "null\n<overlay_role>" as null
+    }
+    together {
+        object "null@spine\n<role_definition>" as null_spine
+        object "rr@leaf\n<role_definition>" as rr_leaf
+        object "rr@spine\n<role_definition>" as rr_spine
+        object "crb_gateway@spine\n<role_definition>" as crb_gw_spine
+        object "crb_access@leaf\n<role_definition>" as crb_acc_leaf
+    }
+    together {
+        object "qfx_5k@leaf\n<node_profile>" as qfx_5k
+        object "qfx_10k@leaf\n<node_profile>" as qfx_10k
+    }
+}
+null_spine --> spine
+null_spine --> null
+null_spine --> underlay_bgp
+null_spine --> overlay_bgp
+rr_leaf --> route_reflector
+rr_leaf --> leaf
+rr_leaf --> underlay_bgp
+rr_leaf --> overlay_bgp
+rr_spine --> route_reflector
+rr_spine --> spine
+rr_spine --> underlay_bgp
+rr_spine --> overlay_bgp
+crb_gw_spine --> crb_gateway
+crb_gw_spine --> spine
+crb_gw_spine --> underlay_bgp
+crb_gw_spine --> overlay_bgp
+crb_gw_spine --> overlay_evpn
+crb_acc_leaf --> crb_access
+crb_acc_leaf --> leaf
+crb_acc_leaf --> underlay_bgp
+crb_acc_leaf --> overlay_bgp
+crb_acc_leaf --> overlay_evpn
+crb_acc_leaf --> overlay_lag
+qfx_5k --> crb_acc_leaf
+qfx_5k --> rr_leaf
+qfx_5k --> null_spine
+qfx_5k --> rr_spine
+qfx_10k --> crb_acc_leaf
+qfx_10k --> rr_leaf
+qfx_10k --> null_spine
+qfx_10k --> crb_gw_spine
+qfx_10k --> rr_spine
+@enduml

@@ -1,0 +1,107 @@
+@startuml Abstract Config Generation Sequence Diagram
+hide footbox
+actor Bob
+box "Device Manager"
+participant "Amqp Handler" as amqp
+participant "PR1\n<<Physical Router>>" as pr
+participant "PR1\n(Greenlet)" as pr_gl
+
+== Initialization ==
+Bob -> amqp : Config Change (Role Assigned)
+activate amqp
+amqp -> pr : update()
+activate pr
+pr -> pr : init_plugins()
+note right of pr
+Initailize plugins based on configuration model
+in VNC DB and based on Feature dependencies
+end note
+activate pr
+create "PR1 Plugin A\n<<Feature Plugin A>>" as fpa
+pr -> fpa
+create "PR1 Plugin B\n<<Feature Plugin B>>" as fpb
+pr -> fpb
+create "PR1 Plugin C\n<<Feature Plugin C>>" as fpc
+pr -> fpc
+deactivate pr
+amqp <-- pr
+deactivate pr
+deactivate amqp
+
+== Config Push ==
+Bob -> amqp : Config Change (CRUD)
+activate amqp
+amqp -> pr : set_config_state()
+activate pr
+deactivate pr
+deactivate amqp
+pr -> pr_gl : push_config()
+activate pr_gl
+pr_gl -> fpa : generate_config()
+activate fpa
+pr_gl <-- fpa
+deactivate fpa
+note right of pr_gl
+featureA: { ... }
+end note
+pr_gl -> pr_gl : check_feature_config_changed()
+activate pr_gl
+deactivate pr_gl
+pr_gl -> pr_gl : update_abstract_config()
+activate pr_gl
+deactivate pr_gl
+note right of pr_gl
+Abstract Config
+featureA: { ... }
+end note
+pr_gl -> fpb : generate_config()
+activate fpb
+pr_gl <-- fpb
+deactivate fpb
+note right of pr_gl
+featureB: { ... }
+end note
+pr_gl -> pr_gl : check_feature_config_changed()
+activate pr_gl
+deactivate pr_gl
+pr_gl -> pr_gl : update_abstract_config()
+activate pr_gl
+deactivate pr_gl
+note right of pr_gl
+Abstract Config
+featureA: { ... }
+featureB: { ... }
+end note
+pr_gl -> fpc : generate_config()
+activate fpc
+pr_gl <-- fpc
+deactivate fpc
+note right of pr_gl
+featureC: { ... }
+end note
+pr_gl -> pr_gl : check_feature_config_changed()
+activate pr_gl
+deactivate pr_gl
+pr_gl -> pr_gl : update_abstract_config()
+activate pr_gl
+deactivate pr_gl
+note right of pr_gl
+Abstract Config
+featureA: { ... }
+featureB: { ... }
+featureC: { ... }
+end note
+end box
+participant "Rabbitmq" as mq
+pr_gl -> mq : config_push()
+note right of mq
+Abstract Config
+featureA: { ... }
+featureB: { ... }
+featureC: { ... }
+end note
+pr_gl -> pr_gl : wait_for_config_push()
+activate pr_gl
+deactivate pr_gl
+deactivate pr_gl
+@enduml
